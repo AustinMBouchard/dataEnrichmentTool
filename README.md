@@ -25,9 +25,8 @@ Install required dependencies
 Open your terminal and run the following commands:
 
     pip install requests
-    pip install PySimpleGUI
 
-This will install the requests library for handling HTTP requests and PySimpleGUI for the application's graphical user interface.
+This will install the requests library for handling HTTP requests.
 
 ## Usage
 
@@ -53,3 +52,4 @@ Make sure your file adheres to the 'Data Enrichment Template' format for success
 ### Created by
 
 Austin Bouchard
+
