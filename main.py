@@ -1,4 +1,3 @@
-import PySimpleGUI as sg
 import time
 import contactEnrich
 import fileConvert
@@ -8,6 +7,7 @@ import jsonParser
 import contactSearch
 import addNewContact
 import naicsMatch
+from tkinter import Tk, filedialog
 
 # Data Enrichment main file.
 
@@ -21,34 +21,19 @@ import naicsMatch
 
 def select_file():
     """
-    Displays a file selection dialog box and returns the path of the selected CSV file.
+    Opens a file dialog to select a CSV file.
 
     Returns:
-        str: The path of the selected CSV file.
+        str: The path of the selected CSV file, or None if canceled.
     """
-
-    layout = [
-        [sg.Text("Please select the CSV file to process:")],
-        [sg.In(), sg.FileBrowse(file_types=(("CSV Files", "*.csv"),), key="-FILE-")],
-        [sg.Button("Submit"), sg.Button("Cancel")],
-    ]
-
-    window = sg.Window("File Selector", layout)
-
-    while True:
-        event, values = window.read()
-        if event == "Submit":
-            file_path = values["-FILE-"]
-            if file_path:
-                window.close()
-                return file_path
-            else:
-                sg.popup("No file selected. Please select a file.", title="Error")
-        elif event in (sg.WIN_CLOSED, "Cancel"):
-            break
-
-    window.close()
-    return None
+    root = Tk()
+    root.withdraw()  # Hide the root window
+    file_path = filedialog.askopenfilename(
+        title="Select the CSV file to process",
+        filetypes=(("CSV Files", "*.csv"),)
+    )
+    root.destroy()
+    return file_path if file_path else None
 
 
 def main():
@@ -105,7 +90,7 @@ def main():
     jsonParser.updateNeedsContact(input_json)
 
     print("Returning Contact IDs...")
-    jwt_token, last_auth_time = contactSearch.contact_search(
+    jwt_token, last_auth_time = contactSearch.contact_search( 
         input_json, jwt_token, last_auth_time, username, password
     )
 

@@ -37,7 +37,7 @@ def get_contact_enrichment_data(entry, jwt_token):
 
     payload = {
         "matchPersonInput": [match_person_input],
-        "outputFields": ["firstName", "lastName", "email", "phone"],
+        "outputFields": ["firstName", "lastName", "email", "phone", "jobTitle"],
     }
 
     response = requests.post(url, headers=headers, json=payload)
@@ -78,6 +78,8 @@ def update_contact_data(entry, new_data_item):
         entry["emailAddress"] = person_data["email"]
     if not entry["phone"] and person_data["phone"]:
         entry["phone"] = person_data["phone"]
+    if not entry["jobTitle"] and person_data["jobTitle"]:
+        entry["jobTitle"] = person_data["jobTitle"]
 
     return entry
 
@@ -99,25 +101,33 @@ def contact_enrich(input_filename, jwt_token, last_auth_time, username, password
     with open(input_filename, "r", encoding="utf-8") as file:
         old_data = json.load(file)
 
+    
     merged_data = []
     contacts_processed = 0
 
-    for entry in old_data:
+    for entry in old_data: #added skip contact function TODO edit later maybe or add to version control
 
         if time.time() - last_auth_time >= 55 * 60:
             jwt_token = auth.authenticate(username, password)
             last_auth_time = time.time()
 
-        new_data = get_contact_enrichment_data(entry, jwt_token)
-        if new_data.get("success") and new_data["data"]["result"][0]["matchStatus"] in [
-            "CONTACT_ONLY_MATCH",
-            "FULL_MATCH",
-        ]:
-            entry = update_contact_data(entry, new_data["data"]["result"][0])
-        merged_data.append(entry)
+        if any([
+        entry.get("firstName"),
+        entry.get("lastName"),
+        entry.get("emailAddress"),
+        entry.get("phone")
+    ]):
+            new_data = get_contact_enrichment_data(entry, jwt_token)
 
+            if new_data and new_data.get("success") and "result" in new_data["data"]:
+                match_result = new_data["data"]["result"][0]
+                if match_result.get("matchStatus") in ["CONTACT_ONLY_MATCH", "FULL_MATCH"]:
+                    entry = update_contact_data(entry, match_result)
+                    
+        merged_data.append(entry)
         contacts_processed += 1
         print(f"\rContacts processed: {contacts_processed}", end="", flush=True)
+    
 
     with open(input_filename, "w", encoding="utf-8") as file:
         json.dump(merged_data, file, indent=4, ensure_ascii=False)

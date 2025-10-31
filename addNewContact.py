@@ -31,7 +31,7 @@ def get_new_contact_data(entry, jwt_token):
 
     payload = {
         "matchPersonInput": [match_person_input],
-        "outputFields": ["firstName", "lastName", "email", "phone"],
+        "outputFields": ["firstName", "lastName", "email", "phone", "jobTitle"],
     }
 
     response = requests.post(url, headers=headers, json=payload)
@@ -60,15 +60,17 @@ def update_new_contact_data(entry, new_data_item):
 
     person_data = new_data_item["data"][0]
 
-    if not entry["firstName"] and person_data["firstName"]:
+    if not entry.get("firstName") and person_data.get("firstName"):
         entry["firstName"] = person_data["firstName"]
-    if not entry["lastName"] and person_data["lastName"]:
+    if not entry.get("lastName") and person_data.get("lastName"):
         entry["lastName"] = person_data["lastName"]
-    if not entry["emailAddress"] and person_data["email"]:
+    if not entry.get("emailAddress") and person_data.get("email"):
         entry["emailAddress"] = person_data["email"]
-    if not entry["phone"] and person_data["phone"]:
+    if not entry.get("phone") and person_data.get("phone"):
         entry["phone"] = person_data["phone"]
-
+    if not entry.get("jobTitle") and person_data.get("jobTitle"):
+        entry["jobTitle"] = person_data["jobTitle"]
+    
     return entry
 
 
